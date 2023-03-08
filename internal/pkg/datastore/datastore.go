@@ -16,11 +16,11 @@ var db *dbConn
 
 func New() *dbConn {
 	if db == nil {
-		connString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-			configs.DBConfig.Username,
-			configs.DBConfig.Password,
+		connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 			configs.DBConfig.Hostname,
 			configs.DBConfig.Port,
+			configs.DBConfig.Username,
+			configs.DBConfig.Password,
 			configs.DBConfig.Database,
 		)
 		conn, err := sql.Open("postgres", connString)
