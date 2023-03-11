@@ -15,6 +15,7 @@ type dbConn struct {
 var db *dbConn
 
 func New() *dbConn {
+	// Check if sql.DB is threadsafe and if not, add semaphore
 	if db == nil {
 		connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 			configs.DBConfig.Hostname,
