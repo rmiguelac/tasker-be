@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
 	"github.com/rmiguelac/tasker/internal/pkg/datastore"
+	"github.com/rmiguelac/tasker/internal/tasks"
 )
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -28,16 +30,18 @@ func handleRequests() {
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
+	task := tasks.Task{}
 
 	db := datastore.New()
-	row := db.Conn.QueryRow("SELECT * FROM tasks WHERE id=?", vars["id"])
+	row := db.Conn.QueryRow("SELECT id, title FROM tasks WHERE id=$1", vars["id"])
 
-	err := row.Scan()
+	err := row.Scan(&task.Id, &task.Title)
 	if err != nil {
 		fmt.Printf("Unable to scan query results: %s", err)
+		return
 	}
 
-	fmt.Fprintf(w, "Values are: %s", row)
+	fmt.Fprintf(w, "Task %d: '%s' created", task.Id, strings.Trim(task.Title, " "))
 }
 
 func createTaskHandler(w http.ResponseWriter, r *http.Request) {

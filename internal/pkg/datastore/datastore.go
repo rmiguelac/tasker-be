@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/rmiguelac/tasker/internal/configs"
+	"github.com/rmiguelac/tasker/internal/config"
 )
 
 type dbConn struct {
@@ -17,16 +17,17 @@ var db *dbConn
 func New() *dbConn {
 	// Check if sql.DB is threadsafe and if not, add semaphore
 	if db == nil {
+		dbConfig := config.NewDBConfig()
 		connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			configs.DBConfig.Hostname,
-			configs.DBConfig.Port,
-			configs.DBConfig.Username,
-			configs.DBConfig.Password,
-			configs.DBConfig.Database,
+			dbConfig.Hostname,
+			dbConfig.Port,
+			dbConfig.Username,
+			dbConfig.Password,
+			dbConfig.Database,
 		)
 		conn, err := sql.Open("postgres", connString)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		return &dbConn{Conn: conn}
 	}
