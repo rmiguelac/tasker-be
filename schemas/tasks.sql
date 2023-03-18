@@ -4,8 +4,9 @@ GRANT ALL PRIVILEGES ON DATABASE tasks TO tasker;
 ALTER USER tasker WITH PASSWORD 'taskerPWD22';
 CREATE TABLE IF NOT EXISTS tasks (
     id BIGSERIAL PRIMARY KEY,
-    title CHAR(124),
+    title VARCHAR(124),
     createdAt TIMESTAMP DEFAULT NOW(),
     updatedAt TIMESTAMP DEFAULT NOW(),
-    fineshedAt TIMESTAMP
+    fineshedAt TIMESTAMP,
+    done BOOLEAN DEFAULT FALSE
 );
