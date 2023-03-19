@@ -16,3 +16,16 @@ The following script will create the database, user and table for the developmen
 ```bash
 ./scripts/setup.sh create 'myPASShere'
 ```
+
+## Developing
+
+Once the database is running, export the environment variables for the app.  
+For example:
+
+```bash
+ export DB_PASS='taskerPWD22'
+ export DB_USER='tasker'
+ export DB_HOST='localhost'
+ export DB_DATABASE='tasks'
+ export DB_PORT='5432
+```
