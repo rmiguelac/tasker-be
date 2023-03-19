@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(124),
     createdAt TIMESTAMP DEFAULT NOW(),
-    lastUpdated TIMESTAMP DEFAULT NOW(),
+    lastUpdated TIMESTAMP,
     finishedAt TIMESTAMP,
     done BOOLEAN DEFAULT FALSE,
     description TEXT

@@ -3,16 +3,14 @@ package tasks
 import (
 	"fmt"
 	"time"
-
-	"github.com/rmiguelac/tasker/internal/pkg/datastore"
 )
 
 type Task struct {
 	Id          int        `json:"id"`
 	Title       string     `json:"title"`
-	Description string     `json:"descripton"`
+	Description string     `json:"description"`
 	CreatedAt   time.Time  `json:"createdat"`
-	LastUpdated time.Time  `json:"lastupdated"`
+	LastUpdated *time.Time `json:"lastupdated"`
 	FinishedAt  *time.Time `json:"finishedat"`
 	Done        bool       `json:"done"`
 }
@@ -28,17 +26,13 @@ func GetTask(id string) (*Task, error) {
 	return t, nil
 }
 
-func getTaskFromDB(id string) (*Task, error) {
-	var t Task
+func CreateTask(t *Task) (*Task, error) {
 
-	db := datastore.New()
-	row := db.Conn.QueryRow("SELECT id, title, createdat, finishedat, lastupdated, done, COALESCE(description, '') FROM tasks WHERE id=$1", id)
-
-	// Check what happens when the task id does not exist in the database
-	err := row.Scan(&t.Id, &t.Title, &t.CreatedAt, &t.FinishedAt, &t.LastUpdated, &t.Done, &t.Description)
+	t, err := createTaskInDB(t)
 	if err != nil {
+		fmt.Printf("Unable to create task: %s\n", err)
 		return nil, err
 	}
 
-	return &t, nil
+	return t, nil
 }

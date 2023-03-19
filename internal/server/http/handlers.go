@@ -43,18 +43,13 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Unable to create task: %s\n", err)
 	}
 
-	i := `INSERT INTO tasks (title) VALUES ($1) RETURNING id`
-	db := datastore.New()
-
-	var id int
-
-	err := db.Conn.QueryRow(i, task.Title).Scan(&id)
+	t, err := tasks.CreateTask(&task)
 	if err != nil {
-		log.Println("Unable to insert into the database")
-		log.Println(err)
+		log.Printf("Unable to create task: %s", err)
 	}
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(t)
 
-	fmt.Fprintf(w, "Task with id %d created.", id)
 }
 
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
