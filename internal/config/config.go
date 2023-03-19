@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -12,7 +13,7 @@ type DatabaseConfig struct {
 	Port     string `json:"port"`
 }
 
-func NewDBConfig() *DatabaseConfig {
+func NewDBConfig() string {
 	dbConfig := &DatabaseConfig{
 		Username: os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASS"),
@@ -20,5 +21,12 @@ func NewDBConfig() *DatabaseConfig {
 		Database: os.Getenv("DB_DATABASE"),
 		Port:     os.Getenv("DB_PORT"),
 	}
-	return dbConfig
+	connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dbConfig.Hostname,
+		dbConfig.Port,
+		dbConfig.Username,
+		dbConfig.Password,
+		dbConfig.Database,
+	)
+	return connString
 }

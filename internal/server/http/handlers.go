@@ -24,12 +24,7 @@ func HandleRequests() {
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	var task tasks.Task
-
-	db := datastore.New()
-	row := db.Conn.QueryRow("SELECT id, title, createdat, done FROM tasks WHERE id=$1", vars["id"])
-
-	err := row.Scan(&task.Id, &task.Title, &task.CreatedAt, &task.Done)
+	t, err := tasks.GetTask(vars["id"])
 	if err != nil {
 		// TODO: Differ here if not found or something else
 		fmt.Printf("Unable to scan query results: %s", err)
@@ -38,7 +33,7 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "applicaton/json")
-	json.NewEncoder(w).Encode(task)
+	json.NewEncoder(w).Encode(t)
 }
 
 func createTaskHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +68,7 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := datastore.New()
-	_, err := db.Conn.Exec("UPDATE tasks SET title = $1, done = $2 WHERE id = $3", task.Title, task.Done, id)
+	_, err := db.Conn.Exec("UPDATE tasks SET title = $1, done = $2, description=$3 WHERE id = $4", task.Title, task.Done, task.Description, id)
 	if err != nil {
 		log.Printf("Unable to update task: %s\n", err)
 	}

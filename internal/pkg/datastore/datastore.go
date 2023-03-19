@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/rmiguelac/tasker/internal/config"
@@ -18,14 +17,7 @@ func New() *dbConn {
 	// Check if sql.DB is threadsafe and if not, add semaphore
 	if db == nil {
 		dbConfig := config.NewDBConfig()
-		connString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			dbConfig.Hostname,
-			dbConfig.Port,
-			dbConfig.Username,
-			dbConfig.Password,
-			dbConfig.Database,
-		)
-		conn, err := sql.Open("postgres", connString)
+		conn, err := sql.Open("postgres", dbConfig)
 		if err != nil {
 			log.Println(err)
 		}
