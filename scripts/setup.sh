@@ -9,7 +9,7 @@ if [[ $1 == "create" ]]; then
     	--name postgres \
         --restart always \
         -p 5432:5432 \
-    	-e POSTGRES_PASSWORD=testpwd \
+    	-e POSTGRES_PASSWORD=${2:-myPWD22} \
     	-e PGDATA=/var/lib/postgresql/data/pgdata \
     	-v /tmp/db:/var/lib/postgresql/data \
     	-v ${HOME}/repositories/tasker/schemas:/docker-entrypoint-initdb.d \
