@@ -36,3 +36,14 @@ func CreateTask(t *Task) (*Task, error) {
 
 	return t, nil
 }
+
+func UpdateTask(id int, t *Task) (*Task, error) {
+
+	t, err := updateTaskInDB(id, t)
+	if err != nil {
+		fmt.Printf("Unable to create task: %s\n", err)
+		return nil, err
+	}
+
+	return t, nil
+}

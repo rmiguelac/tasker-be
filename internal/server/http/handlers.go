@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/rmiguelac/tasker/internal/pkg/datastore"
@@ -55,21 +56,25 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Unable to parse task id: %s\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	var task tasks.Task
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
-		log.Printf("Unable to update task: %s\n", err)
+		log.Printf("Unable to parse task: %s\n", err)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 
-	db := datastore.New()
-	_, err := db.Conn.Exec("UPDATE tasks SET title = $1, done = $2, description=$3 WHERE id = $4", task.Title, task.Done, task.Description, id)
+	t, err := tasks.UpdateTask(id, &task)
 	if err != nil {
 		log.Printf("Unable to update task: %s\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
-
-	// TODO: Actually it would be better to return th updated task
 	w.WriteHeader(http.StatusNoContent)
+	json.NewEncoder(w).Encode(t)
 }
 
 func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {

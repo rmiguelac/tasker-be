@@ -22,7 +22,8 @@ func getTaskFromDB(id string) (*Task, error) {
 }
 
 func createTaskInDB(t *Task) (*Task, error) {
-	q := `INSERT INTO tasks (title,description) VALUES ($1,$2) RETURNING id,title,description,createdat,lastupdated,finishedat,done`
+	q := `INSERT INTO tasks (title,description) VALUES ($1,$2)
+		RETURNING id,title,description,createdat,lastupdated,finishedat,done`
 	db := datastore.New()
 
 	var task Task
@@ -41,5 +42,30 @@ func createTaskInDB(t *Task) (*Task, error) {
 	}
 
 	return t, nil
+}
+
+func updateTaskInDB(id int, t *Task) (*Task, error) {
+
+	q := `"UPDATE tasks SET title = $1, done = $2, description=$3
+		WHERE id = $4" 
+		RETURNING id,title,description,createdat,lastupdated,finishedat,done`
+
+	db := datastore.New()
+	var task Task
+	err := db.Conn.QueryRow(q, t.Title, t.Done, t.Description, id).Scan(
+		&task.Id,
+		&task.Title,
+		&task.Description,
+		&task.CreatedAt,
+		&task.LastUpdated,
+		&task.FinishedAt,
+		&task.Done,
+	)
+	if err != nil {
+		log.Printf("Unable to update task in the database: %s\n", err)
+		return nil, err
+	}
+
+	return &task, err
 
 }
