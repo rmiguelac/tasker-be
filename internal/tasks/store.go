@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/rmiguelac/tasker/internal/pkg/datastore"
@@ -62,8 +63,13 @@ func updateTaskInDB(id int, t *Task) (*Task, error) {
 		&task.Done,
 	)
 	if err != nil {
-		log.Printf("Unable to update task in the database: %s\n", err)
-		return nil, err
+		if err == sql.ErrNoRows {
+			log.Printf("Unable to update as no task with id %d was found", id)
+			return nil, nil
+		} else {
+			log.Printf("Unable to update task in the database: %s\n", err)
+			return nil, err
+		}
 	}
 
 	return &task, err

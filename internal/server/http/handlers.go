@@ -73,6 +73,11 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Unable to update task: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+
+	if t == nil {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Task with id %d not found.", id)
+	}
 	w.WriteHeader(http.StatusNoContent)
 	json.NewEncoder(w).Encode(t)
 }
