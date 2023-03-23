@@ -25,11 +25,18 @@ func HandleRequests() {
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	t, err := tasks.GetTask(vars["id"])
+	id, err := strconv.Atoi(vars["id"])
+	t, err := tasks.GetTask(id)
 	if err != nil {
 		// TODO: Differ here if not found or something else
 		fmt.Printf("Unable to scan query results: %s", err)
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if t == nil {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Task with id %d not found.", id)
 		return
 	}
 
@@ -48,9 +55,9 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Unable to create task: %s", err)
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(t)
-
 }
 
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
@@ -96,5 +103,4 @@ func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Should send a message, no?
 	w.WriteHeader(http.StatusNoContent)
-
 }

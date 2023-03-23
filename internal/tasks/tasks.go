@@ -6,7 +6,7 @@ import (
 )
 
 type Task struct {
-	Id          int        `json:"id"`
+	Id          int        `json:"id,omitempty"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
 	CreatedAt   time.Time  `json:"createdat"`
@@ -15,7 +15,7 @@ type Task struct {
 	Done        bool       `json:"done"`
 }
 
-func GetTask(id string) (*Task, error) {
+func GetTask(id int) (*Task, error) {
 
 	t, err := getTaskFromDB(id)
 	if err != nil {
