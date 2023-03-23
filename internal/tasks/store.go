@@ -30,11 +30,12 @@ func getTaskFromDB(id int) (*Task, error) {
 
 func createTaskInDB(t *Task) (*Task, error) {
 	q := `INSERT INTO tasks (title,description) VALUES ($1,$2)
-		RETURNING title,description,createdat,lastupdated,finishedat,done`
+		RETURNING id,title,description,createdat,lastupdated,finishedat,done`
 	db := datastore.New()
 
 	var task Task
 	err := db.Conn.QueryRow(q, t.Title, t.Description).Scan(
+		&task.Id,
 		&task.Title,
 		&task.Description,
 		&task.CreatedAt,
@@ -47,13 +48,13 @@ func createTaskInDB(t *Task) (*Task, error) {
 		return nil, err
 	}
 
-	return t, nil
+	return &task, nil
 }
 
 func updateTaskInDB(id int, t *Task) (*Task, error) {
 
-	q := `"UPDATE tasks SET title = $1, done = $2, description=$3
-		WHERE id = $4" 
+	q := `UPDATE tasks SET title = $1, done = $2, description=$3
+		WHERE id = $4 
 		RETURNING id,title,description,createdat,lastupdated,finishedat,done`
 
 	db := datastore.New()
@@ -77,6 +78,6 @@ func updateTaskInDB(id int, t *Task) (*Task, error) {
 		}
 	}
 
-	return &task, err
+	return &task, nil
 
 }

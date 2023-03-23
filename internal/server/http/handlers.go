@@ -28,7 +28,6 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	t, err := tasks.GetTask(id)
 	if err != nil {
-		// TODO: Differ here if not found or something else
 		fmt.Printf("Unable to scan query results: %s", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -76,6 +75,7 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t, err := tasks.UpdateTask(id, &task)
+	fmt.Println(t)
 	if err != nil {
 		log.Printf("Unable to update task: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +85,8 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Task with id %d not found.", id)
 	}
-	w.WriteHeader(http.StatusNoContent)
+
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(t)
 }
 
