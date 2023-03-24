@@ -13,7 +13,6 @@ func getTaskFromDB(id int) (*Task, error) {
 	db := datastore.New()
 	row := db.Conn.QueryRow("SELECT id, title, createdat, finishedat, lastupdated, done, COALESCE(description, '') FROM tasks WHERE id=$1", id)
 
-	// Check what happens when the task id does not exist in the database
 	err := row.Scan(&t.Id, &t.Title, &t.CreatedAt, &t.FinishedAt, &t.LastUpdated, &t.Done, &t.Description)
 	if err != nil {
 		if err == sql.ErrNoRows {

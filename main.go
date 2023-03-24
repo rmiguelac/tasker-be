@@ -3,10 +3,10 @@ package main
 import (
 	_ "github.com/lib/pq"
 
-	tserver "github.com/rmiguelac/tasker/internal/server/http"
+	"github.com/rmiguelac/tasker/internal/api"
 )
 
 func main() {
-	tserver.HandleRequests()
-
+	s := api.New(":8000")
+	s.Run()
 }
