@@ -14,11 +14,17 @@ import (
 
 type APIServer struct {
 	listenAddr string
+	datastore  datastore.PostgresStore
 }
 
 func New(listenAddr string) *APIServer {
+	db, err := datastore.NewPostgresStore()
+	if err != nil {
+		log.Printf("Unable to start database connection: %s\n", err)
+	}
 	return &APIServer{
 		listenAddr: listenAddr,
+		datastore:  *db,
 	}
 }
 
@@ -37,16 +43,10 @@ func (s *APIServer) HandleGetTask(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
-	t, err := tasks.GetTask(id)
+	t, err := s.datastore.GetTask(id)
 	if err != nil {
-		fmt.Printf("Unable to scan query results: %s", err)
+		fmt.Printf("Unable to get results from the database: %s", err)
 		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	if t == nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "Task with id %d not found.", id)
 		return
 	}
 
@@ -61,7 +61,7 @@ func (s *APIServer) HandleCreateTask(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Unable to create task: %s\n", err)
 	}
 
-	t, err := tasks.CreateTask(&task)
+	t, err := s.datastore.CreateTask(&task)
 	if err != nil {
 		log.Printf("Unable to create task: %s", err)
 	}
@@ -86,7 +86,7 @@ func (s *APIServer) HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 
-	t, err := tasks.UpdateTask(id, &task)
+	t, err := s.datastore.UpdateTask(id, &task)
 	if err != nil {
 		log.Printf("Unable to update task: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -105,11 +105,12 @@ func (s *APIServer) HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
 func (s *APIServer) HandleDeleteTask(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	id := vars["id"]
-
-	db := datastore.New()
-	_, err := db.Conn.Exec("DELETE FROM tasks WHERE id=$1", id)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
+		log.Printf("Unable to parse task id: %s\n", err)
+	}
+
+	if err := s.datastore.DeleteTask(id); err != nil {
 		// TODO: If id does not exist, what happens?
 		log.Printf("Unable to delete task: %s\n", err)
 	}

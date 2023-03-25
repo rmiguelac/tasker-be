@@ -1,19 +1,27 @@
-package tasks
+package datastore
 
 import (
 	"database/sql"
 	"log"
 
-	"github.com/rmiguelac/tasker/internal/pkg/datastore"
+	"github.com/rmiguelac/tasker/internal/tasks"
 )
 
-func getTaskFromDB(id int) (*Task, error) {
-	var t Task
+func (s *PostgresStore) GetTask(id int) (*tasks.Task, error) {
 
-	db := datastore.New()
-	row := db.Conn.QueryRow("SELECT id, title, createdat, finishedat, lastupdated, done, COALESCE(description, '') FROM tasks WHERE id=$1", id)
+	q := `SELECT id, title, createdat, finishedat, lastupdated, done, COALESCE(description, '') 
+	FROM tasks WHERE id=$1`
+	var task tasks.Task
 
-	err := row.Scan(&t.Id, &t.Title, &t.CreatedAt, &t.FinishedAt, &t.LastUpdated, &t.Done, &t.Description)
+	err := s.db.QueryRow(q, id).Scan(
+		&task.Id,
+		&task.Title,
+		&task.CreatedAt,
+		&task.FinishedAt,
+		&task.LastUpdated,
+		&task.Done,
+		&task.Description,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("Unable to get task from the database with id %d. Not found", id)
@@ -24,16 +32,16 @@ func getTaskFromDB(id int) (*Task, error) {
 		}
 	}
 
-	return &t, nil
+	return &task, nil
 }
 
-func createTaskInDB(t *Task) (*Task, error) {
+func (s *PostgresStore) CreateTask(t *tasks.Task) (*tasks.Task, error) {
+
 	q := `INSERT INTO tasks (title,description) VALUES ($1,$2)
 		RETURNING id,title,description,createdat,lastupdated,finishedat,done`
-	db := datastore.New()
+	var task tasks.Task
 
-	var task Task
-	err := db.Conn.QueryRow(q, t.Title, t.Description).Scan(
+	err := s.db.QueryRow(q, t.Title, t.Description).Scan(
 		&task.Id,
 		&task.Title,
 		&task.Description,
@@ -50,15 +58,14 @@ func createTaskInDB(t *Task) (*Task, error) {
 	return &task, nil
 }
 
-func updateTaskInDB(id int, t *Task) (*Task, error) {
+func (s *PostgresStore) UpdateTask(id int, t *tasks.Task) (*tasks.Task, error) {
 
 	q := `UPDATE tasks SET title = $1, done = $2, description=$3
 		WHERE id = $4 
 		RETURNING id,title,description,createdat,lastupdated,finishedat,done`
 
-	db := datastore.New()
-	var task Task
-	err := db.Conn.QueryRow(q, t.Title, t.Done, t.Description, id).Scan(
+	var task tasks.Task
+	err := s.db.QueryRow(q, t.Title, t.Done, t.Description, id).Scan(
 		&task.Id,
 		&task.Title,
 		&task.Description,
@@ -79,4 +86,21 @@ func updateTaskInDB(id int, t *Task) (*Task, error) {
 
 	return &task, nil
 
+}
+
+func (s *PostgresStore) DeleteTask(id int) error {
+
+	q := "DELETE FROM tasks WHERE id=$1"
+	_, err := s.db.Exec(q, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("Unable to update as no task with id %d was found", id)
+			return nil
+		} else {
+			log.Printf("Unable to update task in the database: %s\n", err)
+			return err
+		}
+	}
+
+	return nil
 }

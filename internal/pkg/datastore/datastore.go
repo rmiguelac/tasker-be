@@ -4,24 +4,25 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/lib/pq"
 	"github.com/rmiguelac/tasker/internal/config"
 )
 
-type dbConn struct {
-	Conn *sql.DB
+type PostgresStore struct {
+	db *sql.DB
 }
 
-var db *dbConn
-
-func New() *dbConn {
+func NewPostgresStore() (*PostgresStore, error) {
 	// Check if sql.DB is threadsafe and if not, add semaphore
-	if db == nil {
-		dbConfig := config.NewDBConfig()
-		conn, err := sql.Open("postgres", dbConfig)
-		if err != nil {
-			log.Println(err)
-		}
-		return &dbConn{Conn: conn}
+	dbConfig := config.NewDBConfig()
+
+	db, err := sql.Open("postgres", dbConfig)
+	if err != nil {
+		log.Println(err)
+		return nil, err
 	}
-	return db
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+	return &PostgresStore{db: db}, nil
 }
