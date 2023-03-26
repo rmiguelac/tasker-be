@@ -12,6 +12,8 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
+type Tags []string
+
 func NewPostgresStore() (*PostgresStore, error) {
 	// Check if sql.DB is threadsafe and if not, add semaphore
 	dbConfig := config.NewDBConfig()

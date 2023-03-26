@@ -16,7 +16,7 @@ if [[ $1 == "create" ]]; then
     	postgres:14.3
 
 elif [[ $1 == "delete" ]]; then
-    sudo rm -Rf ${HOME}/repositories/tasker/db 
+    sudo rm -Rf /tmp/db 
     docker stop postgres
     docker rm postgres
 else
