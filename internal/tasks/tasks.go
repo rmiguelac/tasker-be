@@ -12,4 +12,5 @@ type Task struct {
 	LastUpdated *time.Time `json:"lastupdated"`
 	FinishedAt  *time.Time `json:"finishedat"`
 	Done        bool       `json:"done"`
+	Tags        []string   `json:"tags"`
 }
