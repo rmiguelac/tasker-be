@@ -78,7 +78,6 @@ func (s *APIServer) HandleCreateTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "applicaton/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(t)
 	err = json.NewEncoder(w).Encode(t)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -114,7 +113,6 @@ func (s *APIServer) HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "applicaton/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(t)
 	err = json.NewEncoder(w).Encode(t)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
