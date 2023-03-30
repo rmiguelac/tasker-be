@@ -12,11 +12,15 @@ import (
 	"github.com/rmiguelac/tasker/internal/tasks"
 )
 
+// APIServer has the datastore that all the methods will use
+// as well as the listening port
 type APIServer struct {
 	listenAddr string
 	datastore  datastore.PostgresStore
 }
 
+// New initializes the datastore and returns a reference
+// for the APIServer
 func New(listenAddr string) *APIServer {
 	db, err := datastore.NewPostgresStore()
 	if err != nil {
@@ -28,6 +32,8 @@ func New(listenAddr string) *APIServer {
 	}
 }
 
+// Run starts the http server with a mux router
+// as well as task handlers
 func (s *APIServer) Run() {
 	r := mux.NewRouter()
 
@@ -39,6 +45,10 @@ func (s *APIServer) Run() {
 
 }
 
+// HandleGetTask takes the id variable from the request
+// attempts to get a task from the database with given id
+// If it fails because there is no task with that id, return status not fount
+// If it finds the task, return it json enconded
 func (s *APIServer) HandleGetTask(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
@@ -51,6 +61,8 @@ func (s *APIServer) HandleGetTask(w http.ResponseWriter, r *http.Request) {
 
 	t, err := s.datastore.GetTask(id)
 	if err != nil {
+		// TODO: Change here so that if there is no error but no task,
+		// it means that there is no such task with that ID
 		fmt.Printf("Unable to get results from the database: %s", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
