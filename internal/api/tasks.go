@@ -43,6 +43,12 @@ func (s *APIServer) HandleGetTask(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		fmt.Printf("Unable to get id from url vars: %s", err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	t, err := s.datastore.GetTask(id)
 	if err != nil {
 		fmt.Printf("Unable to get results from the database: %s", err)
@@ -51,7 +57,11 @@ func (s *APIServer) HandleGetTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "applicaton/json")
-	json.NewEncoder(w).Encode(t)
+	err = json.NewEncoder(w).Encode(t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (s *APIServer) HandleCreateTask(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +79,11 @@ func (s *APIServer) HandleCreateTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "applicaton/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(t)
+	err = json.NewEncoder(w).Encode(t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (s *APIServer) HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +115,11 @@ func (s *APIServer) HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "applicaton/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(t)
+	err = json.NewEncoder(w).Encode(t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (s *APIServer) HandleDeleteTask(w http.ResponseWriter, r *http.Request) {
