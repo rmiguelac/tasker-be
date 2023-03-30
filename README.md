@@ -29,3 +29,15 @@ For example:
  export DB_DATABASE='tasks'
  export DB_PORT='5432
 ```
+
+### Linting
+
+```bash
+golangci-lint run
+```
+
+### Testing
+
+```bash
+go test ./...
+```
