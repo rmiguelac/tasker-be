@@ -104,13 +104,7 @@ func (s *PostgresStore) UpdateTask(id int, t *tasks.Task) (*tasks.Task, error) {
 		&task.Done,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("Unable to update as no task with id %d was found", id)
-			return nil, nil
-		} else {
-			log.Printf("Unable to update task in the database: %s\n", err)
-			return nil, err
-		}
+		return nil, err
 	}
 
 	if t.Tags != nil {
@@ -135,15 +129,21 @@ func (s *PostgresStore) UpdateTask(id int, t *tasks.Task) (*tasks.Task, error) {
 func (s *PostgresStore) DeleteTask(id int) error {
 
 	q := "DELETE FROM tasks WHERE id=$1"
-	_, err := s.db.Exec(q, id)
+	result, err := s.db.Exec(q, id)
+	log.Println(err)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("Unable to update as no task with id %d was found", id)
-			return nil
-		} else {
-			log.Printf("Unable to update task in the database: %s\n", err)
-			return err
-		}
+		log.Printf("Unable to delete task %d from the database: %s", id, err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("Unable to get the number of affected rows: %s\n", err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
 	}
 
 	return nil
