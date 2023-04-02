@@ -60,6 +60,7 @@ func (s *APIServer) Run() {
 	r.Use(CORSHandler)
 
 	r.HandleFunc("/tasks", s.HandleCreateTask).Methods("POST")
+	r.HandleFunc("/tasks", s.HandleGetAllTasks).Methods("GET")
 	r.HandleFunc("/tasks/{id}", s.HandleGetTask).Methods("GET")
 	r.HandleFunc("/tasks/{id}", s.HandleUpdateTask).Methods("PUT")
 	r.HandleFunc("/tasks/{id}", s.HandleDeleteTask).Methods("DELETE")
@@ -96,6 +97,24 @@ func (s *APIServer) HandleGetTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "applicaton/json")
+	err = json.NewEncoder(w).Encode(t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// HandleGetAllTasks queries the database for all tasks
+func (s *APIServer) HandleGetAllTasks(w http.ResponseWriter, r *http.Request) {
+
+	t, err := s.datastore.GetAllTasks()
+	if err != nil {
+		fmt.Printf("Unable to get tasks: %s\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Tyge", "applicaton/json")
 	err = json.NewEncoder(w).Encode(t)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

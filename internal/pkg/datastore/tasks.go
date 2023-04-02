@@ -7,6 +7,37 @@ import (
 	"github.com/rmiguelac/tasker/internal/tasks"
 )
 
+func (s *PostgresStore) GetAllTasks() ([]tasks.Task, error) {
+
+	q := `SELECT * FROM tasks;`
+	var ts []tasks.Task
+	rows, err := s.db.Query(q)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var task tasks.Task
+		err = rows.Scan(
+			&task.Id,
+			&task.Title,
+			&task.CreatedAt,
+			&task.LastUpdated,
+			&task.FinishedAt,
+			&task.Done,
+			&task.Description,
+		)
+		if err != nil {
+			log.Printf("Unable to scan one of all tasks: %s\n", err)
+			continue
+		}
+
+		ts = append(ts, task)
+	}
+
+	return ts, nil
+}
+
 func (s *PostgresStore) GetTask(id int) (*tasks.Task, error) {
 
 	q := `SELECT id, title, createdat, finishedat, lastupdated, done, COALESCE(description, '') FROM tasks WHERE id=$1`
@@ -31,23 +62,12 @@ func (s *PostgresStore) GetTask(id int) (*tasks.Task, error) {
 		}
 	}
 
-	w := `SELECT tag FROM task_tags JOIN tags ON tags.id = task_tags.tag_id JOIN tasks ON task_tags.task_id = tasks.id WHERE task_id = $1`
-	tags, err := s.db.Query(w, id)
+	t, err := s.UpdateTaskStructWithTags(task)
 	if err != nil {
-		log.Printf("Unable to get tags from the database: %s\n", err)
 		return nil, err
 	}
 
-	for tags.Next() {
-		var ttag string
-		err = tags.Scan(&ttag)
-		if err != nil {
-			return nil, err
-		}
-		task.Tags = append(task.Tags, ttag)
-	}
-
-	return &task, nil
+	return t, nil
 }
 
 func (s *PostgresStore) CreateTask(t *tasks.Task) (*tasks.Task, error) {
@@ -170,4 +190,40 @@ func (s *PostgresStore) LinkTags(t_id int, tags []string) error {
 		}
 	}
 	return nil
+}
+
+func (s *PostgresStore) GetTaskTags(t_id int) ([]string, error) {
+
+	w := `SELECT tag FROM task_tags JOIN tags ON tags.id = task_tags.tag_id  WHERE task_id = $1`
+	tags, err := s.db.Query(w, t_id)
+	if err != nil {
+		log.Printf("Unable to get tags from the database: %s\n", err)
+		return nil, err
+	}
+
+	var ts []string
+	for tags.Next() {
+		var ttag string
+		err = tags.Scan(&ttag)
+		if err != nil {
+			return nil, err
+		}
+		ts = append(ts, ttag)
+	}
+
+	return ts, nil
+
+}
+
+func (s PostgresStore) UpdateTaskStructWithTags(t tasks.Task) (*tasks.Task, error) {
+
+	t_tags, err := s.GetTaskTags(t.Id)
+	if err != nil {
+		return nil, err
+	}
+	for _, t_tag := range t_tags {
+		t.Tags = append(t.Tags, t_tag)
+	}
+
+	return &t, nil
 }

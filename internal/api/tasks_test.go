@@ -1,7 +1,14 @@
 package api
 
-import "testing"
+import (
+	"database/sql"
+	"testing"
+)
 
-func TestXxx(t *testing.T) {
+type MockDatastore struct {
+	db *sql.DB
+}
+
+func TestHandleGetAllTasks(t *testing.T) {
 
 }
