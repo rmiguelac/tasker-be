@@ -31,7 +31,11 @@ func (s *PostgresStore) GetAllTasks() ([]tasks.Task, error) {
 			log.Printf("Unable to scan one of all tasks: %s\n", err)
 			continue
 		}
-
+		t_tags, err := s.GetTaskTags(task.Id)
+		if err != nil {
+			log.Printf("Unable to get tags from task %d: %s", task.Id, err)
+		}
+		task.Tags = t_tags
 		ts = append(ts, task)
 	}
 
